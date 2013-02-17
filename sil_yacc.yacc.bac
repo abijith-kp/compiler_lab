@@ -1,0 +1,129 @@
+%{
+#include<stdio.h>
+void yyerror(char *);
+%}
+
+%token INT, INTEGER,  COMMA, ID, BOOL, BOOLEAN, DECL, ENDDECL, AMP, SIM_BRAC_O, SIM_BRAC_C, SQR_BRAC_O, SQR_BRAC_C, CURL_BRAC_O, CURL_BRAC_C, K_BEGIN, END, RETURN, SEMICOLN, EQUAL, MAIN, PLUS, MINUS, MULTIPLY, DIVIDE, AND, OR, NOT
+
+
+%%
+
+start	: glob_decl  main_funct_def
+	;
+
+glob_decl	: DECL declaration ENDDECL     { printf("decl\n"); }
+		;
+
+main_funct_def	: INTEGER MAIN SIM_BRAC_O SIM_BRAC_C CURL_BRAC_O glob_decl funct_body CURL_BRAC_C  { printf("main\n"); }
+		;
+
+funct_body	: K_BEGIN content_re RETURN INT SEMICOLN END 
+		;
+
+content_re	: content content_re
+		|
+		;
+
+content		: assignment_stmnt
+		| conditional_stmnt
+		| iterative_stmnt
+		| ret
+		| inp_outp_stmnt
+		|
+		;
+
+conditional_stmnt	:
+			;
+
+iterative_stmnt	:
+		;
+
+inp_outp_stmnt	:
+		;
+
+ret		: RETURN data SEMICOLN
+		;
+
+arithmetic_expr	: arithmetic_expr PLUS arithmetic_expr
+		| arithmetic_expr MINUS arithmetic_expr
+		| expr
+		;
+
+expr	: expr MULTIPLY expr
+	| expr DIVIDE expr
+	| INT
+	;
+
+logical_expr	: logical_expr OR logical_expr
+		| l_expr
+		;
+
+l_expr	: l_expr AND l_expr
+	| ln_expr
+	;
+
+ln_expr	: NOT ln_expr
+	| BOOL
+	;
+
+declaration	: datatype var var_re SEMICOLN declaration   { printf("declaration\n"); }
+		|
+		;
+
+var_re	: COMMA var var_re
+	|
+	;
+
+funct   : ID SIM_BRAC_O arg_list_re SIM_BRAC_C
+        ;
+
+array   : ID SQR_BRAC_O INT SQR_BRAC_C
+        ;
+
+assignment_stmnt      : ID EQUAL ID SEMICOLN
+                      | ID EQUAL arithmetic_expr SEMICOLN
+		      | ID EQUAL logical_expr SEMICOLN
+		      |
+                      ;
+
+var	: ID        { printf("ID\n"); }
+	| array     { printf("array\n"); }
+	;
+
+arg_list_re	: arg_list arg_list1
+		|
+		;
+
+arg_list1	: SEMICOLN arg_list arg_list1
+		|
+		;
+
+arg_list	: datatype amp ID arg
+		;
+
+arg	: COMMA amp ID arg
+	;
+
+amp	: AMP
+	;
+
+
+datatype	: INTEGER
+		| BOOLEAN
+		;
+
+data		: INT
+		| BOOL
+		;
+
+
+%%
+
+void yyerror(char *s) {
+    fprintf(stderr, "%s\n", s);
+}
+
+int main(void) {
+    yyparse();
+    return 0;
+}
