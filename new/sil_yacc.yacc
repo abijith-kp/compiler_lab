@@ -1,15 +1,27 @@
 %{
 #include<stdio.h>
+
+#define ID 1
+#define AR 2
+#define IN 3
+#define BL 4
+#define DI 5
+#define DB 6
+
 void yyerror(char *);
+
 
 struct node {
 	int type;
 	int intVal;
 	char charVal;
-	struct node *one;
+	int datatype;
+    struct node *one;
 	struct node *two;
 	struct node *three;
 	};
+
+struct node *makenode(int type, int intVal, char charVal[20], struct node *one, struct node *two, struct node *three);
 
 %}
 
@@ -21,7 +33,7 @@ struct node {
 
 %token INT INTEGER  ID BOOL BOOLEAN DECL ENDDECL K_BEGIN END RETURN MAIN AND OR NOT WHILE DO ENDWHILE IF THEN ELSE ENDIF READ WRITE
 
-
+%type<n> var type datatype var_r decl
 
 %start start
 
@@ -82,29 +94,46 @@ expr 	: type '+' expr	{ printf("21333333333"); }
 global_var      : DECL decl ENDDECL     { printf("global"); }
                 ;
 
-decl	: datatype var var_r ';' decl
-	|
-	;
+decl	: datatype var var_r ';' decl { $$ = makenode(DCL, 0, "", $1, $2, $3); }
+	    | {}
+	    ;
 
-var_r   : ',' var var_r
-	| 
+var_r   : ',' var var_r  { $$ = makenode(0, 0, "", $2, $3, NULL); }
+	    | {}
         ;
 
-datatype	: INTEGER  { printf("type"); }
-		| BOOLEAN
-		;
+datatype	: INTEGER  { $$ = makenode(DB , 0 , "" , NULL, NULL, NUll); }
+		    | BOOLEAN  { $$ = makenode(DI , 0 , "" , NULL, NULL, NUll); }
 
-type	: var
-	| INT
-	| BOOL
-	;
+		    ;
 
-var     : ID '[' INT ']'  { printf("var"); }
-        | ID   { printf("var"); }
-        ;
+type	: var { $$ = $1; }
+
+	    | INT { $$ = makenode(IN , $1 , "" , NULL, NULL, NUll); }
+
+	    | BOOL { $$ = makenode(BL , 0 , $1 , NULL, NULL, NUll); }
+
+	    ;
+
+var     : ID '[' INT ']'  { $$ = makenode(AR , $3 , $1 , NULL, NULL, NUll); }
+        | ID   { $$ = makenode(ID , 0, $1, NULLL, NULL, NULL); }
+        ; 
 
 
 %%
+
+struct node *makenode(int type, int intVal, char charVal, struct node *one, struct node *two, struct node *three) {
+    struct node *tmp = malloc(sizeof(struct node));
+
+    tmp->type = type;
+    strcpy(tmp->charVal,charVal);
+    tmp->intVal = intVal;
+    tmp->one = one;
+    tmp->two = two;
+    tmp->three = three;
+
+    return tmp;
+}
 
 void yyerror(char *s) {
     fprintf(stderr, "%s\n", s);

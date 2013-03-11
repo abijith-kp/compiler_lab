@@ -56,7 +56,7 @@ WRITE		(write)
 {END}		return END;
 {RETURN}	return RETURN;
 {MAIN}		return MAIN;
-{BOOL}          return BOOL;
+{BOOL}          { char *s = malloc(yyleng); strcpy(yylval.charVal,s); return BOOL };
 {AND}           return AND;
 {OR}            return OR;
 {NOT}           return NOT;
