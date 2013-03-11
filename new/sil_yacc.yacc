@@ -2,11 +2,21 @@
 #include<stdio.h>
 void yyerror(char *);
 
+struct node {
+	int type;
+	int intVal;
+	char charVal;
+	struct node *one;
+	struct node *two;
+	struct node *three;
+	};
+
 %}
 
 %union
 	{ int intVal;
 	  char charVal[20];
+	  struct node *n;
 	}
 
 %token INT INTEGER  ID BOOL BOOLEAN DECL ENDDECL K_BEGIN END RETURN MAIN AND OR NOT WHILE DO ENDWHILE IF THEN ELSE ENDIF READ WRITE
