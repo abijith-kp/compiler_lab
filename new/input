@@ -1,0 +1,21 @@
+decl
+integer as,sad,asd;
+boolean dfs;
+enddecl
+
+integer main()
+{ 
+	decl 
+	integer a[12]; 
+	enddecl 
+	
+	begin 
+	
+	if(aaas<=123) then asfda=asd; else while(asd!=asd) do endwhile; endif;
+	asd =asd;
+	read(as);
+	while(asd==asd) do endwhile;
+	write(adfsd);
+	return 1; 
+	end 
+}
