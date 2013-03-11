@@ -6,10 +6,12 @@ void yyerror(char *);
 
 %union
 	{ int intVal;
-	  char charVal;
+	  char charVal[20];
 	}
 
 %token INT INTEGER  ID BOOL BOOLEAN DECL ENDDECL K_BEGIN END RETURN MAIN AND OR NOT WHILE DO ENDWHILE IF THEN ELSE ENDIF READ WRITE
+
+
 
 %start start
 

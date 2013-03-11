@@ -1,21 +1,44 @@
 decl
-integer as,sad,asd;
-boolean dfs;
+
+integer fact,orial;boolean n[233];
+
 enddecl
 
-integer main()
-{ 
-	decl 
-	integer a[12]; 
-	enddecl 
-	
-	begin 
-	
-	if(aaas<=123) then asfda=asd; else while(asd!=asd) do endwhile; endif;
-	asd =asd;
-	read(as);
-	while(asd==asd) do endwhile;
-	write(adfsd);
-	return 1; 
-	end 
+
+integer main( ){ // Main definition should always begin like this
+
+decl
+
+integer n,i ;
+
+enddecl
+
+begin
+
+if (n==1) then
+
+rvalue = 1;
+
+else
+
+rvalue = n * factorial/n[1];
+
+endif;
+
+read (n);
+
+i = 1;
+
+while ( i <= n) do
+
+write ( factorial+i);
+
+i = i + 1;
+
+endwhile;
+
+return 1; // Any integer value may be returned
+
+end
+
 }

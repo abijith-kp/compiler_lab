@@ -3,6 +3,7 @@
 #include "y.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define GE 'a'
 #define LE 'b'
@@ -69,8 +70,8 @@ WRITE		(write)
 {READ}		return READ;
 {WRITE}		return WRITE;
 
-{ID}            return ID;
-{INT}           return INT;
+{ID}            { strcpy(yylval,yytext); return ID; }
+{INT}           { yylval = atoi(yytext); return INT; }
 
 "<="       return LE;
 ">="    return GE;
