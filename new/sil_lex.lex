@@ -70,8 +70,11 @@ WRITE		(write)
 {READ}		return READ;
 {WRITE}		return WRITE;
 
-{ID}            { strcpy(yylval,yytext); return ID; }
-{INT}           { yylval = atoi(yytext); return INT; }
+{ID}            { char *t = malloc(yyleng);
+		  strcpy(yylval.charVal , t); 
+		  return ID; 
+		}
+{INT}           { yylval.intVal = atoi(yytext); return INT; }
 
 "<="       return LE;
 ">="    return GE;
