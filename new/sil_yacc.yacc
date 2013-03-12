@@ -1,14 +1,32 @@
 %{
 #include<stdio.h>
+
+#define LS 0
+#define GS 1
+
 void yyerror(char *);
 
+struct node {
+	int type;
+	int intVal;
+	char charVal;
+	int datatype;
+    struct node *one;
+	struct node *two;
+	struct node *three;
+	};
+
+struct symbol {
+    int scope;
+    int datatype;
+    char idVal[20];
+    };
 %}
 
 %union
 	{ int intVal;
 	  char charVal[20];
-      int datatype;
-
+      struct node *n;
 	}
 
 %token INT INTEGER  ID BOOL BOOLEAN DECL ENDDECL K_BEGIN END RETURN MAIN AND OR NOT WHILE DO ENDWHILE IF THEN ELSE ENDIF READ WRITE
