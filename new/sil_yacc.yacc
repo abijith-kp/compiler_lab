@@ -23,6 +23,8 @@ struct node {
 
 struct node *makenode(int type, int intVal, char charVal[20], struct node *one, struct node *two, struct node *three);
 
+void printVar(struct node *n);
+
 %}
 
 %union
@@ -91,7 +93,7 @@ expr 	: type '+' expr	{ printf("21333333333"); }
 
 
 
-global_var      : DECL decl ENDDECL     { printf("global"); }
+global_var      : DECL decl ENDDECL     { printVar($1); }
                 ;
 
 decl	: datatype var var_r ';' decl { $$ = makenode(DCL, 0, "", $1, $2, $3); }
@@ -121,6 +123,10 @@ var     : ID '[' INT ']'  { $$ = makenode(AR , $3 , $1 , NULL, NULL, NUll); }
 
 
 %%
+
+void makenode(struct node *n) {
+    
+}
 
 struct node *makenode(int type, int intVal, char charVal, struct node *one, struct node *two, struct node *three) {
     struct node *tmp = malloc(sizeof(struct node));
