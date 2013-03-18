@@ -69,8 +69,11 @@ WRITE		(write)
 {READ}		return READ;
 {WRITE}		return WRITE;
 
-{ID}            return ID;
-{INT}           return INT;
+{ID}            { char *tmp = malloc(sizeof(yyleng));
+                  return ID;
+{INT}           { yylval.intVal = atoi(yytext);
+                  return INT;
+                }
 
 "<="       return LE;
 ">="    return GE;

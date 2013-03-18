@@ -1,5 +1,5 @@
 decl
-integer as,sad,asd;
+integer as[22],sad,asd;
 boolean dfs;
 enddecl
 
