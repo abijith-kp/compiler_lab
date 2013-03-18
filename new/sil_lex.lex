@@ -44,7 +44,7 @@ WRITE		(write)
 
 %%
 
-"/*"[^"*/"]*"*/"    printf("cccccccc");;
+"/*"[^"*/"]*"*/"    printf("cccccccc");
 "//".*              ;
 
 {DECL}          return DECL;
@@ -71,6 +71,7 @@ WRITE		(write)
 
 {ID}            { char *tmp = malloc(sizeof(yyleng));
                   return ID;
+                }
 {INT}           { yylval.intVal = atoi(yytext);
                   return INT;
                 }
@@ -99,3 +100,9 @@ WRITE		(write)
 "}"   return *yytext;
 
 .		;
+
+%%
+
+int yywrap() { 
+    return 1; 
+}
