@@ -102,3 +102,9 @@ WRITE		(write)
 "}"   return *yytext;
 
 .		;
+
+%%
+
+int yywrap() { 
+    return 1; 
+}
