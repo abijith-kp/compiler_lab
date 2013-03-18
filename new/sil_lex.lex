@@ -56,7 +56,11 @@ WRITE		(write)
 {END}		return END;
 {RETURN}	return RETURN;
 {MAIN}		return MAIN;
-{BOOL}          { char *s = malloc(yyleng); strcpy(yylval.charVal,s); return BOOL };
+{BOOL}          { char *s = malloc(yyleng); 
+                  strcpy(s,yytext); 
+                  yylval.charVal = s;
+                  return BOOL; 
+                }
 {AND}           return AND;
 {OR}            return OR;
 {NOT}           return NOT;
@@ -71,9 +75,10 @@ WRITE		(write)
 {WRITE}		return WRITE;
 
 {ID}            { char *t = malloc(yyleng);
-		  strcpy(yylval.charVal , t); 
-		  return ID; 
-		}
+		          strcpy(t, yytext);
+                  yylval.charVal = t;
+		          return ID; 
+		        }
 {INT}           { yylval.intVal = atoi(yytext); return INT; }
 
 "<="       return LE;
@@ -100,3 +105,9 @@ WRITE		(write)
 "}"   return *yytext;
 
 .		;
+
+%%
+
+int yywrap() { 
+    return 1; 
+}
