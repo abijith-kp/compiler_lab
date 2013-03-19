@@ -3,6 +3,7 @@
 #include "y.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define GE 'a'
 #define LE 'b'
@@ -55,7 +56,11 @@ WRITE		(write)
 {END}		return END;
 {RETURN}	return RETURN;
 {MAIN}		return MAIN;
-{BOOL}          return BOOL;
+{BOOL}          { char *s = malloc(yyleng); 
+                  strcpy(s,yytext); 
+                  yylval.charVal = s;
+                  return BOOL; 
+                }
 {AND}           return AND;
 {OR}            return OR;
 {NOT}           return NOT;
@@ -69,14 +74,12 @@ WRITE		(write)
 {READ}		return READ;
 {WRITE}		return WRITE;
 
-{ID}            { char *s = malloc(sizeof(yyleng));	
-		  strcpy(s,yytext);
-		  yylval.charVal = s;
-	 	  return ID;
-		}
-{INT}           { yylval.intVal = atoi(yytext);
-		  return INT;
-		}
+{ID}            { char *t = malloc(yyleng);
+		          strcpy(t, yytext);
+                  yylval.charVal = t;
+		          return ID; 
+		        }
+{INT}           { yylval.intVal = atoi(yytext); return INT; }
 
 "<="       return LE;
 ">="    return GE;
