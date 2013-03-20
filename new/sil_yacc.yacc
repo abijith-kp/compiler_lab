@@ -89,29 +89,28 @@ body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL);
                                   if(!strcmp($1->check, "void") && !strcmp($3->check, "void"))// || ($3 == NULL)))
                                     $$->check = "void";
                                   else
-                                    yyerror("type checking errorsdfsdf");
+                                    yyerror("body  ");
                                 }
 	    |                       { $$ = makenode(BD, 0, "", NULL, NULL, NULL);
                                   $$->check = "void"; 
-                                  printf("NULL");
                                 }
 	    ;
 
 statement	: assignment_stmnt  { $$ = $1; //printf("sadas");
                                   $$->check = $1->check;
-                                 printTree($1);
+                                  printTree($1);
                                 }
 		    | conditional_stmnt { $$ = $1;
                                   $$->check = $1->check;
-                                  //printTree($1);
+                                  printTree($1);
                                 }
 		    | iterative_stmnt   { $$ = $1;
                                   $$->check = $1->check;
-                                  //printTree($1);
+                                  printTree($1);
                                 }
 		    | in_out_stmnt      { $$ = $1;
                                   $$->check = $1->check;
-                                  //printTree($1);
+                                  printTree($1);
                                 }
 		    ;
 
@@ -120,13 +119,13 @@ conditional_stmnt	: IF '(' condition ')' THEN body ELSE body ENDIF    { $$ = mak
                                                                           if(!strcmp($3->check, "bool") && !strcmp($6->check, "void") && !strcmp($8->check, "void"))
                                                                             $$->check = "void";
                                                                           else
-                                                                            yyerror("type checking error");
+                                                                            yyerror("if_one  \n ");
                                                                         }
 			        | IF '(' condition ')' THEN body ENDIF              { $$ = makenode(IF2, 0, "", $3, $6, NULL); 
                                                                           if(!strcmp($3->check, "bool") && !strcmp($6->check, "void"))
                                                                             $$->check = "void";
                                                                           else
-                                                                            yyerror("type checking error");
+                                                                            yyerror("if_two\n");
                                                                         }
 			        ;
 
@@ -134,7 +133,7 @@ iterative_stmnt	: WHILE '(' condition ')' DO body ENDWHILE  { $$ = makenode(IS, 
                                                               if(!strcmp($3->check, "bool") && !strcmp($6->check, "void"))
                                                                 $$->check = "void";
                                                               else
-                                                                yyerror("type checking error");
+                                                                yyerror("while  \n ");
                                                            }
 		        ;
 
@@ -142,37 +141,37 @@ condition	: expr 'a' expr { $$ = makenode(GE1, 0, "", $1, $3, NULL);
                               if(typeCheck($1, $3) && !strcmp($1->check, "int"))
                                 $$->check = "bool";
                               else
-                                yyerror("type checking error");
+                                yyerror("condition1 \n");
                             }
 		    | expr 'b' expr { $$ = makenode(LE1, 0, "", $1, $3, NULL); 
                               if(typeCheck($1, $3) && !strcmp($1->check, "int"))
                                 $$->check = "bool";
                               else
-                                yyerror("type checking error");
+                                yyerror("condition2\n");
                             }
 		    | expr 'c' expr { $$ = makenode(L1, 0, "", $1, $3, NULL); 
                               if(typeCheck($1, $3) && !strcmp($1->check, "int"))
                                 $$->check = "bool";
                               else
-                                yyerror("type checking error");
+                                yyerror("condition3\n");
                             }
 		    | expr 'd' expr { $$ = makenode(G1, 0, "", $1, $3, NULL); 
                               if(typeCheck($1, $3) && !strcmp($1->check, "int"))
                                 $$->check = "bool";
                               else
-                                yyerror("type checking error");
+                                yyerror("condition4\n");
                             }
 		    | expr 'e' expr { $$ = makenode(EE1, 0, "", $1, $3, NULL); 
                               if(typeCheck($1, $3) && !strcmp($1->check, "int"))
                                 $$->check = "bool";
                               else
-                                yyerror("type checking error");
+                                yyerror("condition5\n");
                             }
             | expr 'f' expr { $$ = makenode(NE1, 0, "", $1, $3, NULL); 
                               if(typeCheck($1, $3) && !strcmp($1->check, "int"))
                                 $$->check = "bool";
                               else
-                                yyerror("type checking error");
+                                yyerror("condition6\n");
                             }
 		    ;
 
@@ -189,8 +188,7 @@ assignment_stmnt	: var '=' expr  { $$ = makenode(AS, 0, "", $1, $3, NULL);
                                       if(typeCheck($1, $3))
                                         { $$->check = "void"; /*printTree($$);*/ }
                                       else {
-                                        yyerror("type checking error");
-                                        //printTree($$);
+                                        yyerror("assignment_stmnt\n");
                                         }
                                     }
 			        ;
@@ -270,7 +268,6 @@ var     : ID '[' INT ']'    { $$ = makenode(AR , $3 , $1 , NULL, NULL, NULL);
                                 makeSymbol(scopeG, tempTypeG, $1, $3);
                               char *tmp;
                               tmp = lookup($1);     //lookup in the symbol table and returns error if not found or returns type if found
-                              printf("\t\t %s \t\t %s \n", tmp, $1);
                               if(tmp != "error") {
                                 $$->check = tmp;
                               }
@@ -282,7 +279,6 @@ var     : ID '[' INT ']'    { $$ = makenode(AR , $3 , $1 , NULL, NULL, NULL);
                                 makeSymbol(scopeG, tempTypeG, $1, 0);
                               char *tmp;
                               tmp = lookup($1);
-                              printf("\t\t %s \t\t %s \n", tmp, $1);
                               if(tmp != "error") {
                                 $$->check = tmp;
                               }
