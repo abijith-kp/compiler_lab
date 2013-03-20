@@ -34,6 +34,7 @@ void makeSymbol(int scope, int dataType, char *idVal, int size);
 struct node {
 	int type;
 	int intVal;
+    char *check;
 	char *charVal;
 	int datatype;
     struct node *one;
@@ -57,6 +58,8 @@ int checker=0,scopeG=GS, tempTypeG=2;
 struct node *makenode(int type, int intVal, char *charVal, struct node *one, struct node *two, struct node *three);
 void printTree(struct node *n);
 void printTable(struct symbol *n);
+int typeCheck(struct node *a, struct node *b);
+char *lookup(char *a);
 
 %}
 
@@ -82,68 +85,171 @@ start	: global_var main_funct    {  }
 main_funct      : INTEGER MAIN '(' ')' '{' global_var K_BEGIN body RETURN INT ';' END '}'
                 ;
 
-body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL); printTree($$); 
+body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL);
+                                  if(!strcmp($1->check, "void") && !strcmp($3->check, "void"))// || ($3 == NULL)))
+                                    $$->check = "void";
+                                  else
+                                    yyerror("type checking errorsdfsdf");
                                 }
-	    |                       { }
+	    |                       { $$ = makenode(BD, 0, "", NULL, NULL, NULL);
+                                  $$->check = "void"; 
+                                  printf("NULL");
+                                }
 	    ;
 
 statement	: assignment_stmnt  { $$ = $1; //printf("sadas");
-                                 //printTree($1);
+                                  $$->check = $1->check;
+                                 printTree($1);
                                 }
 		    | conditional_stmnt { $$ = $1;
+                                  $$->check = $1->check;
                                   //printTree($1);
                                 }
 		    | iterative_stmnt   { $$ = $1;
+                                  $$->check = $1->check;
                                   //printTree($1);
                                 }
 		    | in_out_stmnt      { $$ = $1;
+                                  $$->check = $1->check;
                                   //printTree($1);
                                 }
 		    ;
 
 
-conditional_stmnt	: IF '(' condition ')' THEN body ELSE body ENDIF    { $$ = makenode(IF1, 0, "", $3, $6, $8); }
-			        | IF '(' condition ')' THEN body ENDIF              { $$ = makenode(IF2, 0, "", $3, $6, NULL); }
+conditional_stmnt	: IF '(' condition ')' THEN body ELSE body ENDIF    { $$ = makenode(IF1, 0, "", $3, $6, $8); 
+                                                                          if(!strcmp($3->check, "bool") && !strcmp($6->check, "void") && !strcmp($8->check, "void"))
+                                                                            $$->check = "void";
+                                                                          else
+                                                                            yyerror("type checking error");
+                                                                        }
+			        | IF '(' condition ')' THEN body ENDIF              { $$ = makenode(IF2, 0, "", $3, $6, NULL); 
+                                                                          if(!strcmp($3->check, "bool") && !strcmp($6->check, "void"))
+                                                                            $$->check = "void";
+                                                                          else
+                                                                            yyerror("type checking error");
+                                                                        }
 			        ;
 
-iterative_stmnt	: WHILE '(' condition ')' DO body ENDWHILE  { $$ = makenode(IS, 0, "", $3, $6, NULL); }
+iterative_stmnt	: WHILE '(' condition ')' DO body ENDWHILE  { $$ = makenode(IS, 0, "", $3, $6, NULL);
+                                                              if(!strcmp($3->check, "bool") && !strcmp($6->check, "void"))
+                                                                $$->check = "void";
+                                                              else
+                                                                yyerror("type checking error");
+                                                           }
 		        ;
 
-condition	: expr 'a' expr { $$ = makenode(GE1, 0, "", $1, $3, NULL); }
-		    | expr 'b' expr { $$ = makenode(LE1, 0, "", $1, $3, NULL); }
-		    | expr 'c' expr { $$ = makenode(L1, 0, "", $1, $3, NULL); }
-		    | expr 'd' expr { $$ = makenode(G1, 0, "", $1, $3, NULL); }
-		    | expr 'e' expr { $$ = makenode(EE1, 0, "", $1, $3, NULL); }
-            | expr 'f' expr { $$ = makenode(NE1, 0, "", $1, $3, NULL); }
+condition	: expr 'a' expr { $$ = makenode(GE1, 0, "", $1, $3, NULL); 
+                              if(typeCheck($1, $3) && !strcmp($1->check, "int"))
+                                $$->check = "bool";
+                              else
+                                yyerror("type checking error");
+                            }
+		    | expr 'b' expr { $$ = makenode(LE1, 0, "", $1, $3, NULL); 
+                              if(typeCheck($1, $3) && !strcmp($1->check, "int"))
+                                $$->check = "bool";
+                              else
+                                yyerror("type checking error");
+                            }
+		    | expr 'c' expr { $$ = makenode(L1, 0, "", $1, $3, NULL); 
+                              if(typeCheck($1, $3) && !strcmp($1->check, "int"))
+                                $$->check = "bool";
+                              else
+                                yyerror("type checking error");
+                            }
+		    | expr 'd' expr { $$ = makenode(G1, 0, "", $1, $3, NULL); 
+                              if(typeCheck($1, $3) && !strcmp($1->check, "int"))
+                                $$->check = "bool";
+                              else
+                                yyerror("type checking error");
+                            }
+		    | expr 'e' expr { $$ = makenode(EE1, 0, "", $1, $3, NULL); 
+                              if(typeCheck($1, $3) && !strcmp($1->check, "int"))
+                                $$->check = "bool";
+                              else
+                                yyerror("type checking error");
+                            }
+            | expr 'f' expr { $$ = makenode(NE1, 0, "", $1, $3, NULL); 
+                              if(typeCheck($1, $3) && !strcmp($1->check, "int"))
+                                $$->check = "bool";
+                              else
+                                yyerror("type checking error");
+                            }
 		    ;
 
 
-in_out_stmnt	: READ '(' var ')'      { $$ = makenode(RD, 0, "", $3, NULL, NULL); }
-                | WRITE '(' expr ')'    { $$ = makenode(WR, 0, "", $3, NULL, NULL); }
+in_out_stmnt	: READ '(' var ')'      { $$ = makenode(RD, 0, "", $3, NULL, NULL);
+                                          $$->check = "void";
+                                        }
+                | WRITE '(' expr ')'    { $$ = makenode(WR, 0, "", $3, NULL, NULL); 
+                                          $$->check = "void"; 
+                                        }
                 ;
 
 assignment_stmnt	: var '=' expr  { $$ = makenode(AS, 0, "", $1, $3, NULL); 
-                                     //printTree($$); 
+                                      if(typeCheck($1, $3))
+                                        { $$->check = "void"; /*printTree($$);*/ }
+                                      else {
+                                        yyerror("type checking error");
+                                        //printTree($$);
+                                        }
                                     }
 			        ;
 
-expr 	: type '+' expr	{ $$ = makenode(PL, 0, "", $1, $3, NULL); }
-      	| type '-' expr { $$ = makenode(SU, 0, "", $1, $3, NULL); } 
-      	| type '*' expr { $$ = makenode(ML, 0, "", $1, $3, NULL); } 
-  	    | type '/' expr { $$ = makenode(DV, 0, "", $1, $3, NULL); }
-	    | type OR expr  { $$ = makenode(R, 0, "", $1, $3, NULL); }
-        | type AND expr { $$ = makenode(ND, 0, "", $1, $3, NULL); }
-        | NOT expr      { $$ = makenode(NT, 0, "", $2, NULL, NULL); }
-	    | type	        { $$ = $1; }
-      	;
+expr 	: type '+' expr	{ $$ = makenode(PL, 0, "", $1, $3, NULL); 
+                          if(typeCheck($1, $3))
+                            $$->check = "int";
+                          else
+                            yyerror("type checking error");
+                        }
+      	| type '-' expr { $$ = makenode(SU, 0, "", $1, $3, NULL);
+                          if(typeCheck($1, $3))
+                            $$->check = "int";
+                          else
+                            yyerror("type checking error");
+                        }
+      	| type '*' expr { $$ = makenode(ML, 0, "", $1, $3, NULL);
+                          if(typeCheck($1, $3))
+                            $$->check = "int";
+                          else
+                            yyerror("type checking error");
+                        }
+  	    | type '/' expr { $$ = makenode(DV, 0, "", $1, $3, NULL); 
+                          if(typeCheck($1, $3))
+                            $$->check = "int";
+                          else
+                            yyerror("type checking error");
+                        }
+	    | type OR expr  { $$ = makenode(R, 0, "", $1, $3, NULL);
+                          if(typeCheck($1, $3))
+                            $$->check = "bool";
+                          else
+                            yyerror("type checking error");
+                        }
+        | type AND expr { $$ = makenode(ND, 0, "", $1, $3, NULL);
+                          if(typeCheck($1, $3))
+                            $$->check = "bool";
+                          else
+                            yyerror("type checking error");
+                        }
+        | NOT expr      { $$ = makenode(NT, 0, "", $2, NULL, NULL);
+                          if($2->check == "bool")
+                            $$->check = "bool";
+                          else
+                            yyerror("type checking error");
+                        }
+	    | type	        { $$ = $1;
+                          //$$->check = $1->check;
+                          //printf(" %s %s %d ",$$->check, $1->check, $1->type);
+                        }
+                        ;
 
 
 
 global_var      : DECL decl ENDDECL     { if(checker == 0)
-						{ scopeG = LS; checker++; }
-					  else
-						checker++;
-					}
+						                    { scopeG = LS; checker++; }
+					                      else
+						                    checker++;
+					                    }
                 ;
 
 decl	: datatype var var_r { }
@@ -151,7 +257,7 @@ decl	: datatype var var_r { }
 	    ;
 
 var_r   : ',' var var_r { }
-	| ';' decl  {}
+	    | ';' decl  {}
         ;
 
 datatype	: INTEGER   { tempTypeG = IN; }
@@ -159,18 +265,92 @@ datatype	: INTEGER   { tempTypeG = IN; }
 		    ;
 
 
-var     : ID '[' INT ']'    { $$ = makenode(AR , $3 , $1 , NULL, NULL, NULL);  if(checker<=1) makeSymbol(scopeG, tempTypeG, $1, $3); }
-        | ID                { $$ = makenode(I , 0 , $1 , NULL, NULL, NULL);  if(checker<=1) makeSymbol(scopeG, tempTypeG, $1, 0); }
+var     : ID '[' INT ']'    { $$ = makenode(AR , $3 , $1 , NULL, NULL, NULL); 
+                              if(checker<=1) 
+                                makeSymbol(scopeG, tempTypeG, $1, $3);
+                              char *tmp;
+                              tmp = lookup($1);     //lookup in the symbol table and returns error if not found or returns type if found
+                              printf("\t\t %s \t\t %s \n", tmp, $1);
+                              if(tmp != "error") {
+                                $$->check = tmp;
+                              }
+                              else
+                                yyerror("type checking error");
+                            }
+        | ID                { $$ = makenode(I , 0 , $1 , NULL, NULL, NULL); 
+                              if(checker<=1) 
+                                makeSymbol(scopeG, tempTypeG, $1, 0);
+                              char *tmp;
+                              tmp = lookup($1);
+                              printf("\t\t %s \t\t %s \n", tmp, $1);
+                              if(tmp != "error") {
+                                $$->check = tmp;
+                              }
+                              else
+                                yyerror("type checking error");
+
+                            }
         ;
 
-type	: var { $$ = $1; }
+type	: var { $$ = $1; 
+                $$->check = $1->check; 
+              }
 
-	    | INT { $$ = makenode(IN , $1 , "" , NULL, NULL, NULL); }
+	    | INT { $$ = makenode(IN , $1 , "" , NULL, NULL, NULL); 
+                $$->check = "int"; 
+              }
 
-	    | BOOL { $$ = makenode(BL , 0 , $1 , NULL, NULL, NULL); }
+	    | BOOL { $$ = makenode(BL , 0 , $1 , NULL, NULL, NULL); 
+                 $$->check = "bool";
+               }
 	    ;
 
 %%
+
+char *lookup(char *a) {
+
+    struct symbol *tmp;
+    char *t,*t1,*t2;
+    t = "error";
+    t1 = "int";
+    t2 = "bool";
+    tmp = headL;
+
+    int i=0;
+    //printf("\n");
+    
+    while(tmp != NULL) {
+        //printf("%d  %s  %s\n", i++, a, tmp->idVal);
+        if(!strcmp(tmp->idVal, a)) {
+            if(tmp->dataType == IN)
+                { return t1; }
+            else
+                { return t2; }
+        }
+    tmp = tmp->next;
+    }
+    
+    tmp = headG;
+
+    while(tmp != NULL) {
+        if(!strcmp(tmp->idVal, a)) {
+            if(tmp->dataType == IN)
+                return t1;
+            else
+                return t2;
+        }
+    tmp = tmp->next;
+    }
+    return t;
+}
+
+int typeCheck(struct node *a, struct node *b) {
+    if(a->check == b->check)
+        return 1;
+    else {
+        return 0;
+    }
+}
 
 void makeSymbol(int scopeL, int dataType, char *idVal, int size) {
     struct symbol *tmp = malloc(sizeof(struct symbol));
@@ -296,27 +476,27 @@ void printTree(struct node *point) {
         printf(" <= ");
         printTree(point->two);
         }
-else if(point->type == L1) {
+    else if(point->type == L1) {
         printTree(point->one);
         printf(" < ");
         printTree(point->two);
         }
-else if(point->type == G1) {
+    else if(point->type == G1) {
         printTree(point->one);
         printf(" > ");
         printTree(point->two);
         }
-else if(point->type == EE1) {
+    else if(point->type == EE1) {
         printTree(point->one);
         printf(" == ");
         printTree(point->two);
         }
-else if(point->type == NE1) {
+    else if(point->type == NE1) {
         printTree(point->one);
         printf(" != ");
         printTree(point->two);
         }
-else if(point->type == IF1) {
+    else if(point->type == IF1) {
         printf(" if ");
         printTree(point->one);
         printf("\n");
@@ -324,19 +504,17 @@ else if(point->type == IF1) {
         printf("\nelse\n");
         printTree(point->three);
         }
-else if(point->type == IF2) {
+    else if(point->type == IF2) {
         printf(" if ");
         printTree(point->one);
         printf("\n");
         printTree(point->two);
         }
-
 }
 
 void printTable(struct symbol *point) {
     if(point == NULL)
         return;
-    
     printf("\n %d \t %d \t %d \t %s ", point->scope, point->dataType, point->size, point->idVal);
     printTable(point->next);
     printf("\n");
@@ -344,14 +522,12 @@ void printTable(struct symbol *point) {
 
 struct node *makenode(int type, int intVal, char *charVal, struct node *one, struct node *two, struct node *three) {
     struct node *tmp = malloc(sizeof(struct node));
-
     tmp->type = type;
     tmp->charVal = charVal;
     tmp->intVal = intVal;
     tmp->one = one;
     tmp->two = two;
     tmp->three = three;
-
     return tmp;
 }
 
@@ -361,9 +537,10 @@ void yyerror(char *s) {
 
 int main(void) {
     yyparse();
-    printf("\nGlobal syntax table:\n");
-    printTable(headG);
-    printf("\nLocal syntax table:\n");
-    printTable(headL);
+
+    //printf("\nGlobal syntax table:\n");
+    //printTable(headG);
+    //printf("\nLocal syntax table:\n");
+    //printTable(headL);
     return 0;
 }
