@@ -266,24 +266,26 @@ datatype	: INTEGER   { tempTypeG = IN; }
 var     : ID '[' INT ']'    { $$ = makenode(AR , $3 , $1 , NULL, NULL, NULL); 
                               if(checker<=1) 
                                 makeSymbol(scopeG, tempTypeG, $1, $3);
-                              char *tmp;
-                              tmp = lookup($1);     //lookup in the symbol table and returns error if not found or returns type if found
-                              if(tmp != "error") {
-                                $$->check = tmp;
+                              char tmp[100] = {};
+                              char *tp;
+                              tp = lookup($1);     //lookup in the symbol table and returns error if not found or returns type if found
+                              if(tp != "error") {
+                                $$->check = tp;
                               }
                               else
-                                yyerror("type checking error");
+                                { sprintf(tmp, "%s variable not found", $1); yyerror(tmp); return; }
                             }
         | ID                { $$ = makenode(I , 0 , $1 , NULL, NULL, NULL); 
                               if(checker<=1) 
                                 makeSymbol(scopeG, tempTypeG, $1, 0);
-                              char *tmp;
-                              tmp = lookup($1);
-                              if(tmp != "error") {
-                                $$->check = tmp;
+                              char tmp[100] = {};
+                              char *tp;
+                              tp = lookup($1);
+                              if(tp != "error") {
+                                $$->check = tp;
                               }
                               else
-                                yyerror("type checking error");
+                                { sprintf(tmp, "%s variable not found", $1); yyerror(tmp); return; }
 
                             }
         ;

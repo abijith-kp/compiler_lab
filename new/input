@@ -15,7 +15,7 @@ enddecl
 
 begin
 
-if (n[1]==1) then
+if (n[1]==i) then
 
 rvalue = 1;
 
