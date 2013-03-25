@@ -9,7 +9,7 @@ integer main( ){ // Main definition should always begin like this
 
 decl
 
-integer n[100],i,rvalue, factorial;
+integer q,n[100],i,rvalue, factorial;
 
 enddecl
 
@@ -21,13 +21,13 @@ rvalue = 1;
 
 else
 
-rvalue = 2+1-2;
+rvalue = 2 + 1 - 2;
 
-rvalue = n[1] * factorial/n[1];
+rvalue =  n[100] * factorial/i;
 
 endif;
 
-read (n[1]);
+read (q);
 
 i = 1;
 

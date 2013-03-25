@@ -60,10 +60,18 @@ struct tac {
     struct tac *next;
     };
 
+struct reg {
+    char *registr;
+    char *tmp;
+    struct reg *next;
+};
+
 struct symbol *headG = NULL, *headL = NULL;
 struct tac *top=NULL;
+struct reg *head=NULL;
 
-int checker=0,scopeG=GS, tempTypeG=2, tmpCount=0;
+int checker=0,scopeG=GS, tempTypeG=2, tmpCount=0, bufCount=0, regCount=0;
+char *buffer[100];
 
 
 struct node *makenode(int type, int intVal, char *charVal, struct node *one, struct node *two, struct node *three);
@@ -71,9 +79,13 @@ void printTree(struct node *n);
 void printTable(struct symbol *n);
 int typeCheck(struct node *a, struct node *b);
 char *lookup(char *a);
-void addTac(struct tac *t);
+void addTac(char *op, char *dest, char *src1, char *src2);
 char *create_code(struct node *n);
-void printCode();
+void printCode(struct tac *t);
+void assm(char *op, char *dest, char *src1, char *src2);
+char *getReg(char *t);
+void addReg(char *a, int b);
+
 
 %}
 
@@ -96,7 +108,7 @@ void printCode();
 start	: global_var main_funct    {  }
 	    ;
 
-main_funct      : INTEGER MAIN '(' ')' '{' global_var K_BEGIN body RETURN INT ';' END '}'       { //printf("{{{{{{}}}}}}}}}}"); printCode(); 
+main_funct      : INTEGER MAIN '(' ')' '{' global_var K_BEGIN body RETURN INT ';' END '}'       { //create_code($8); //printf("{{{{{{}}}}}}}}}}"); printCode(); 
                           }
                 ;
 
@@ -105,6 +117,8 @@ body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL);
                                     $$->check = "void";
                                   else
                                     yyerror("body  ");
+                                  create_code($1);
+                                  printCode(top);
                                 }
 	    |                       { $$ = makenode(BD, 0, "", NULL, NULL, NULL);
                                   $$->check = "void"; 
@@ -114,7 +128,7 @@ body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL);
 statement	: assignment_stmnt  { $$ = $1; //printf("sadas");
                                   $$->check = $1->check;
                                   //printTree($1);
-                                  create_code($1);
+                                  //create_code($1);
                                   //printCode();
                                 }
 		    | conditional_stmnt { $$ = $1;
@@ -376,6 +390,12 @@ void makeSymbol(int scopeL, int dataType, char *idVal, int size) {
 
 
     if(scopeL == LS) {
+        if(dataType == TMP) {
+            tmp->next = headL;
+            headL = tmp;
+            return;
+        }
+
         if(check(idVal, headL)) {
             yyerror(idVal);
         }
@@ -528,113 +548,217 @@ void printTree(struct node *point) {
 }
 
 char *create_code(struct node *nod) {
-    struct tac *tmp = malloc(sizeof(struct tac));
+    //struct tac *tmp = malloc(sizeof(struct tac));
+    char *tmp = "", *q = "";
     char t[100] = {};
-    //printf("\n>>>>>>> %d %s \n", nod->type, nod->charVal);
+    char t1[100] = {};
 
     if(nod->type == AS) {
-        tmp->op = "=";
-        tmp->dest = create_code(nod->one);
-        tmp->src1 = create_code(nod->two);
-        addTac(tmp);
-        return tmp->dest;
+        tmp = create_code(nod->one); 
+        addTac("=", tmp, create_code(nod->two), "");
+        return tmp;
     } 
     else if(nod->type == PL) {
-        tmp->op = "+";
-        tmpCount++;
-        sprintf(t, "_tmp%d", tmpCount);
-        tmp->dest = t;
-        makeSymbol(LS, TMP, t, 0);
-        tmp->src1 = create_code(nod->one);
-        tmp->src2 = create_code(nod->two);
-        addTac(tmp);
-        return tmp->dest;
+        //tmpCount++;
+        //sprintf(t, "_tmp%d", tmpCount);
+        //makeSymbol(LS, TMP, t, 0);
+        //tmp = t;
+        addTac("+", (q=create_code(nod->one)), create_code(nod->two), "");
+        return  q;
     }
     else if(nod->type == SU) {
-        tmp->op = "-";
-        tmpCount++;
-        sprintf(t, "_tmp%d", tmpCount);
-        tmp->dest = t;
-        makeSymbol(LS, TMP, t, 0);
-        tmp->src1 = create_code(nod->one);
-        tmp->src2 = create_code(nod->two);
-        addTac(tmp);
-        return tmp->dest;
+        //tmpCount++;
+        //sprintf(t, "_tmp%d", tmpCount);
+        //tmp = t;
+        //makeSymbol(LS, TMP, tmp, 0);
+        addTac("-", (q = create_code(nod->one)), create_code(nod->two), "");
+        return q;
     } 
     else if(nod->type == ML) {
-        tmp->op = "*";
-        tmpCount++;
-        sprintf(t, "_tmp%d", tmpCount);
-        tmp->dest = t;
-        makeSymbol(LS, TMP, t, 0);
-        tmp->src1 = create_code(nod->one);
-        tmp->src2 = create_code(nod->two);
-        addTac(tmp);
-        return tmp->dest;
+        //tmpCount++;
+        //sprintf(t, "_tmp%d", tmpCount);
+        //makeSymbol(LS, TMP, t, 0);
+        //tmp = t;
+        addTac("*", (q = create_code(nod->one)), create_code(nod->two), "");
+        return q;
     }
     else if(nod->type == DV) {
-        tmp->op = "+";
-        tmpCount++;
-        sprintf(t, "_tmp%d", tmpCount);
-        tmp->dest = t;
-        makeSymbol(LS, TMP, t, 0);
-        tmp->src1 = create_code(nod->one);
-        tmp->src2 = create_code(nod->two);
-        addTac(tmp);
-        return tmp->dest;
-    }
+        //tmpCount++;
+        //sprintf(t, "_tmp%d", tmpCount);
+        //makeSymbol(LS, TMP, t, 0);
+        //tmp = t;
+        addTac("/", (q = create_code(nod->one)), create_code(nod->two), "");
+        return q;
+    }      
+
     if(nod->type == IN) {
-        tmp->op = "";
         tmpCount++;
         sprintf(t, "_tmp%d", tmpCount);
-        tmp->dest = t;
-        sprintf(t, "%d", nod->intVal);
+        sprintf(t1, "%d", nod->intVal);
         makeSymbol(LS, TMP, t, 0);
-        tmp->src1 = t;
-        addTac(tmp);
-        return tmp->dest;
+        tmp = t;
+        addTac("in", tmp, t1, "");
+        return tmp;
     }
     else if(nod->type == BL) {
-        tmp->op = "";
         tmpCount++;
         sprintf(t, "_tmp%d", tmpCount);
-        tmp->dest = t;
-        makeSymbol(LS, TMP, tmp->dest, 0);
-        tmp->src1 = nod->charVal;
-        addTac(tmp);
-        return tmp->dest;
+        makeSymbol(LS, TMP, t, 0);
+        tmp = t;
+        addTac("bl", tmp, nod->charVal, "");
+        return tmp;
     }
     else if(nod->type == I) {
-        tmp->op = "";
-        tmpCount++;
-        sprintf(t, "_tmp%d", tmpCount);
-        tmp->dest = t;
-        makeSymbol(LS, TMP, t, 0);
-        tmp->src1 = nod->charVal;
-        addTac(tmp);
-        return tmp->dest;
-    } 
-    return "";
+        tmp = nod->charVal;
+        addTac("id", tmp, "", "");
+        return tmp;
+    }
+    else if(nod->type == RD) {
+        tmp = create_code(nod->one);
+        addTac("rd", tmp, "", "");
+    }
+    else if(nod->type == WR) {
+        tmp = create_code(nod->one);
+        addTac("wr", tmp, "", "");
+    }
+    else if(nod->type == AR) 
+         { sprintf(t, "%d", nod->intVal);
+           addTac("ar", nod->charVal, t, "");
+           return nod->charVal;
+         }
+    return "999oooo9999";
 }
 
-void printCode() {
-    struct tac *q;
-    q = top;
-    printf("\n\n\n[[[[[[[]]]]]]]]]]]");
-   /* while(top != NULL) {
-        if(!strcmp(q->op, "="))
-            printf("\n%s \t %s \t %s ", q->op, q->dest, q->src1);
-        else if(!strcmp(q->op, "+") || !strcmp(q->op, "-") || !strcmp(q->op, "*") || !strcmp(q->op, "/"))
-            printf("\n%s \t %s \t %s \t %s", q->op, q->dest, q->src1, q->src2);
-        } */
-}
-
-void addTac(struct tac *t) {
-    printf("\n %s \t %s \t %s\n",t->op, t->dest, t->src1, t->src2);
+void printCode(struct tac *t) {
+    //struct tac *q = malloc(sizeof(struct tac));
+    //q = t;
+    //int i=0;
     
+
+    //while (q != NULL) {
+        //printf("\n(%s) \t (%s) \t (%s) \t (%s)", q->op, q->dest, q->src1, q->src2);
+     //   q = q->next;
+    //}
+    
+    printf("\n***********************************************\n");
+
+    struct reg *s = malloc(sizeof(struct reg));
+    s = head;
+    while(s) {
+        printf("\n%s    %s", s->tmp, s->registr);
+        s = s->next;
+    } 
+    printf("................................................");
+}
+
+void addTac(char *op, char *dest, char *src1, char *src2) {
+    struct tac *t = (struct tac *) malloc(sizeof(struct tac));
+    t->op = op;
+    t->dest = dest;
+    t->src1 = src1;
+    t->src2 = src2;
     t->next = top;
     top = t;
+    //printf("\n%s \t %s \t %s \t %s", top->op, top->dest, top->src1, top->src2);
+    assm(op, dest, src1, src2);
+
     }
+
+void assm(char *op, char *dest, char *src1, char *src2) {
+    char t[100] = {};
+
+    //printf(">>>> %s  %s\n", dest, op);
+    if(!strcmp(op, "id")) {
+        addReg(dest, regCount);
+        sprintf(t , "MOV R%d [%s]", regCount++, dest);
+        printf("\n%s", t);
+    }
+    else if(!strcmp(op, "in")) {
+        addReg(dest, regCount);
+        sprintf(t, "MOV R%d %s", regCount++, src1);
+        printf("\n%s", t);
+    }
+    else if(!strcmp(op, "=")) {
+        sprintf(t, "MOV %s [%s]", getReg(dest), getReg(src1));
+        printf("\n%s\n", t);
+    }
+    else if(!strcmp(op, "*")) {
+
+        sprintf(t, "MUL %s %s", getReg(src1), getReg(src2));
+        printf("\n%s\n", t);
+        //sprintf(t, "MOV %s %s", getReg(dest), getReg(src1));
+        //printf("\n%s\n", t);
+    }
+    else if(!strcmp(op, "/")) {
+
+        sprintf(t, "DIV %s %s", getReg(src1), getReg(src2));
+        printf("\n%s\n", t);
+        //sprintf(t, "MOV %s %s", getReg(dest), getReg(src1));
+        //printf("\n%s\n", t);
+    }
+else if(!strcmp(op, "-")) {
+
+        sprintf(t, "SUB %s %s", getReg(src1), getReg(src2));
+        printf("\n%s\n", t);
+        //sprintf(t, "MOV %s %s", getReg(dest), getReg(src1));
+        //printf("\n%s\n", t);
+    }
+else if(!strcmp(op, "+")) {
+
+        sprintf(t, "ADD %s %s", getReg(src1), getReg(src2));
+        printf("\n%s\n", t);
+        //sprintf(t, "MOV %s %s", getReg(dest), getReg(src1));
+        //printf("\n%s\n", t);
+    }
+
+}
+
+char *getReg(char *a) {
+    struct reg *t;
+    t = head;
+
+    while(t) {
+        if(!strcmp(t->tmp, a))
+            return t->registr;
+        t = t->next;
+    }
+}
+
+void addReg(char *a, int b) {
+    struct reg *tn = (struct reg *) malloc(sizeof(struct reg));
+    struct reg *tq = (struct reg *)malloc(sizeof(struct reg));
+    tq = head;
+    int t=0;
+    char tw[100] = {};
+    
+    sprintf(tw, "R%d", b);
+    tn->tmp = a;
+    tn->registr = tw;
+    
+   // if (tq == NULL) {
+        tn->next = head;
+        head = tn;
+   //     return;
+    //}
+/*
+    while(tq->next != NULL) {
+        if(!strcmp(tq->tmp, a)) {
+            regCount--;
+            return;
+        }
+        tq = tq->next;
+    }
+    
+    if (!strcmp(tq->tmp, a)) {
+        regCount--;
+        return;
+    }
+    
+    tq->next = tn;
+    tn->next = NULL;
+    return; */
+}
+
 
 void printTable(struct symbol *point) {
     if(point == NULL)
@@ -664,7 +788,7 @@ int main(void) {
 
     //printf("\nGlobal syntax table:\n");
     //printTable(headG);
-    printf("\nLocal syntax table:\n");
-    printTable(headL);
+    //printf("\nLocal syntax table:\n");
+    //printTable(headL);
     return 0;
 }
