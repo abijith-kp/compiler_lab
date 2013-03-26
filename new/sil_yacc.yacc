@@ -1,5 +1,5 @@
 %{
-#include<stdio.h>
+#include <stdio.h>
 
 #define I  1
 #define AR 2
@@ -50,9 +50,19 @@ struct symbol {
     struct symbol *next;
     };
 
-struct symbol *headG = NULL, *headL = NULL;
+struct tac {
+    char *op;
+    char *dest;
+    char *src1;
+    char *src2;
+    struct tac *next;
+};
 
-int checker=0,scopeG=GS, tempTypeG=2;
+
+struct symbol *headG = NULL, *headL = NULL;
+struct tac *head = NULL;;
+
+int checker=0,scopeG=GS, tempTypeG=2, regCount=0, tmpCount=0;
 
 
 struct node *makenode(int type, int intVal, char *charVal, struct node *one, struct node *two, struct node *three);
@@ -60,6 +70,10 @@ void printTree(struct node *n);
 void printTable(struct symbol *n);
 int typeCheck(struct node *a, struct node *b);
 char *lookup(char *a);
+void addTac(struct node *);
+void addReg(char *, int);
+int checkT(char *);
+void add(struct tac *t);
 
 %}
 
@@ -90,6 +104,8 @@ body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL);
                                     $$->check = "void";
                                   else
                                     yyerror("body  ");
+
+                                  addTac($1);
                                 }
 	    |                       { $$ = makenode(BD, 0, "", NULL, NULL, NULL);
                                   $$->check = "void"; 
@@ -98,19 +114,19 @@ body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL);
 
 statement	: assignment_stmnt  { $$ = $1; //printf("sadas");
                                   $$->check = $1->check;
-                                  printTree($1);
+                                  //printTree($1);
                                 }
 		    | conditional_stmnt { $$ = $1;
                                   $$->check = $1->check;
-                                  printTree($1);
+                                  //printTree($1);
                                 }
 		    | iterative_stmnt   { $$ = $1;
                                   $$->check = $1->check;
-                                  printTree($1);
+                                  //printTree($1);
                                 }
 		    | in_out_stmnt      { $$ = $1;
                                   $$->check = $1->check;
-                                  printTree($1);
+                                  //printTree($1);
                                 }
 		    ;
 
@@ -518,6 +534,82 @@ void printTable(struct symbol *point) {
     printf("\n");
 }
 
+char *addTac(struct node *t) {
+    char temp1[100] = {};
+    char temp2[100] = {};
+    struct tac *new = (struct tac *)malloc(sizeof(struct tac *));
+
+    if(t->type == I) {
+        new->dest = t->charVal;
+        new->op = "id";
+        printf("\n one\n");
+        add(new);
+        return new->dest;
+    }
+    else if(t->type == AR) {
+        sprintf(temp1, "_temp%d", tmpCount++);
+        new->op = "ofst";
+        new->dest = temp1;
+        t->intVal *= 8;
+        sprintf(temp2, "%d", t->intVal);
+        new->src1 = t->charVal;
+        new->src2 = temp2;
+        add(new);
+        new->op = "ar";
+        sprintf(temp2, "_temp%d", tmpCount++);
+        new->dest = temp2;
+        new->src1 = temp1;
+        printf("\n two\n");
+        add(new);
+        return new->dest;
+    }
+    else if(t->type == PL) {
+        new->op = "+";
+        sprintf(temp1, "_temp%d", tmpCount++);
+        new->dest = temp1;
+        add
+        new->src1 = addTac(t->one);
+        new->src2 = addTac(t->two);
+
+}
+
+void add(struct tac *t) {
+    printf("\n %s    %s    %s    %s", t->op, t->dest, t->src1, t->src2);
+    t->next = head;
+    head = t;
+}
+
+/*
+void addTmp(char *a, int b) {
+    struct tac *t = (struct tac *)malloc(sizeof(struct tac *));
+    char q[20] = {};
+
+    sprintf(q, "R%d", b);
+    t->tmp = a;
+    t->reg = q;
+
+    printf("\n %s     %s", t->tmp, t->reg);
+
+    if(!checkT(a)) {
+        t->next = head;
+        head = t;
+    }
+}
+
+int checkT(char *a) {
+    struct tac *q = malloc(sizeof(struct tac *));
+    q = head;
+
+    while(q != NULL) {
+        if(!strcmp(q->tmp, a))
+            return 1;
+        q = q->next;
+    }
+    return 0;
+}
+*/
+
+
 struct node *makenode(int type, int intVal, char *charVal, struct node *one, struct node *two, struct node *three) {
     struct node *tmp = malloc(sizeof(struct node));
     tmp->type = type;
@@ -538,7 +630,7 @@ int main(void) {
 
     //printf("\nGlobal syntax table:\n");
     //printTable(headG);
-    //printf("\nLocal syntax table:\n");
-    //printTable(headL);
+    printf("\nLocal syntax table:\n");
+    printTable(headL);
     return 0;
 }
