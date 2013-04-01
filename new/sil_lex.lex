@@ -24,7 +24,7 @@ INT             [0-9]+
 INTEGER		(integer)
 DECL		(decl)
 ENDDECL		(enddecl)
-BOOL		(True|false)
+BOOL		(true|false)
 BOOLEAN		(boolean)
 K_BEGIN		(begin)
 END		(end)
