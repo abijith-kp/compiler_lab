@@ -5,6 +5,16 @@ integer fact,orial;
 enddecl
 
 
+boolean abi () {
+decl
+integer a;
+enddecl
+
+begin
+return true;
+end
+}
+
 integer main( ){ // Main definition should always begin like this
 
 decl

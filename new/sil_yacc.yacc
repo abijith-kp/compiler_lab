@@ -107,13 +107,20 @@ int check(char *t, int type, struct symbol *p);
 
 %%
 
-start	: global_var main_funct    {  }
+start	: global_var function_def main_funct    { printf("main"); }
+        | global_var main_funct { }
 	    ;
 
 main_funct      : INTEGER MAIN '(' ')' '{' global_var K_BEGIN body RETURN INT ';' END '}'   { addTac($8);
                                                                                               printf("\nSTART\n%s\nHALT\n", $8->code);
                                                                                             }
                 ;
+
+function_def    : INTEGER ID '(' ')' '{' global_var K_BEGIN RETURN INT ';' END '}'
+                | BOOLEAN ID '(' ')' '{' global_var K_BEGIN RETURN BOOL ';' END '}'
+                ;
+
+
 
 body	: statement ';' body    { $$ = makenode(BD, 0, "", $1, $3, NULL, 0);
                                 }
@@ -128,6 +135,8 @@ statement	: assignment_stmnt  { $$ = $1;
 		    | iterative_stmnt   { $$ = $1;
                                 }
 		    | in_out_stmnt      { $$ = $1;
+                                }
+            | function_def      {
                                 }
 		    ;
 
