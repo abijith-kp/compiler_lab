@@ -234,7 +234,8 @@ var     : ID '[' INT ']'    { $$ = makenode(AR , $3 , $1 , NULL, NULL, NULL, 0);
                               char *tp;
                               tp = lookup($1);
                               if(!strcmp(tp, "error")) {
-                                sprintf(tmp, "%s variable not found", $1); 
+                                sprintf(tmp, "%s variable not found", $1);
+                                yyerror(tmp);
                               }
                             }
         ;
@@ -252,7 +253,6 @@ type	: var { $$ = $1;
 %%
 
 char *lookup(char *a) {
-
     struct symbol *tmp;
     char *t,*t1,*t2;
     t = "error";
@@ -261,7 +261,6 @@ char *lookup(char *a) {
     tmp = headL;
 
     while(tmp != NULL) {
-        //printf("%d  %s  %s\n", i++, a, tmp->idVal);
         if(!strcmp(tmp->idVal, a)) {
             if(tmp->dataType == IN)
                 { return t1; }
@@ -578,7 +577,7 @@ int main(void) {
 
     //printf("\nGlobal syntax table:\n");
     //printTable(headG);
-    printf("\nLocal syntax table:\n");
-    printTable(headL);
+    //printf("\nLocal syntax table:\n");
+    //printTable(headL);
     return 0;
 }

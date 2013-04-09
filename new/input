@@ -12,21 +12,23 @@ enddecl
 
 begin
 
-//i = 1;
+i = 1;
 
-//factorial = 2;
+factorial = 2;
+n =0;
 
-//write (rvalue);
+write (rvalue);
 
-//if(true) then
-//write ( factorial*i+i);
-//i=i;
-//endif;
+if(true) then
+write ( factorial*i+i);
+i=i;
+write (i);
+endif;
 
-//while(false) do
-//write ( factorial*i+i);
-//i=i;
-//endwhile;
+while(false) do
+write ( factorial*i+i);
+i=i;
+endwhile;
 
 i = 1;
 
