@@ -11,19 +11,27 @@ boolean new;
 enddecl
 
 begin
+
+//i = 1;
+
+//factorial = 2;
+
+//write (rvalue);
+
+//if(true) then
+//write ( factorial*i+i);
+//i=i;
+//endif;
+
+//while(false) do
+//write ( factorial*i+i);
+//i=i;
+//endwhile;
+
 i = 1;
-factorial = 2;
-write (rvalue);
-if(true) then
-write ( factorial*i+i);
-i=i;
-endif;
-while(false) do
-write ( factorial*i+i);
-i=i;
-endwhile;
-i = 1;
+
 return 1; // Any integer value may be returned
+
 end
 
 }
