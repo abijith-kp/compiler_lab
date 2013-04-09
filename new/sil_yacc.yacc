@@ -518,6 +518,66 @@ int addTac(struct node *t) {
         regCount = 0;
         return 0;
     }
+    else if(t->type == EE1) {
+        tp = addTac(t->one);
+        tr = addTac(t->two);
+        
+        sprintf(temp1, "%s\n%s\nEQ R%d R%d\n", (t->one)->code, (t->two)->code, tp, tr);
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return tp;
+    }
+    else if(t->type == NE1 ) {
+        tp = addTac(t->one);
+        tr = addTac(t->two);
+        
+        sprintf(temp1, "%s\n%s\nNE R%d R%d\n", (t->one)->code, (t->two)->code, tp, tr);
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return tp;
+    }
+    else if(t->type == GE1) {
+        tp = addTac(t->one);
+        tr = addTac(t->two);
+        
+        sprintf(temp1, "%s\n%s\nGE R%d R%d\n", (t->one)->code, (t->two)->code, tp, tr);
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return tp;
+    }
+    else if(t->type == LE1) {
+        tp = addTac(t->one);
+        tr = addTac(t->two);
+        
+        sprintf(temp1, "%s\n%s\nLE R%d R%d\n", (t->one)->code, (t->two)->code, tp, tr);
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return tp;
+    }
+    else if(t->type == G1) {
+        tp = addTac(t->one);
+        tr = addTac(t->two);
+        
+        sprintf(temp1, "%s\n%s\nGT R%d R%d\n", (t->one)->code, (t->two)->code, tp, tr);
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return tp;
+    }
+    else if(t->type == L1) {
+        tp = addTac(t->one);
+        tr = addTac(t->two);
+        
+        sprintf(temp1, "%s\n%s\nLT R%d R%d\n", (t->one)->code, (t->two)->code, tp, tr);
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return tp;
+    }
     else if(t->type == IF1) {
         tp = addTac(t->one);
         tr = addTac(t->two);
