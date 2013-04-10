@@ -12,25 +12,36 @@ enddecl
 
 begin
 
-i = 1;
+//i = 2;
 
-factorial = 2;
-n =0;
+switch(i)
+case 2: //rvalue = 9;
+        break
+case 3: //rvalue = 9;
+        break
+case 4: //rvalue = 9;
+        break
+default : factorial = 0;
+          break
+          ;
 
-write (rvalue);
+//factorial = 2;
+//n =0;
 
-if(true) then
-write ( factorial*i+i);
-i=i;
-write (i);
-endif;
+//write (rvalue);
 
-while(false) do
-write ( factorial*i+i);
-i=i;
-endwhile;
+//if(true >= 1) then
+//write ( factorial*i+i);
+//i=i;
+//write (i);
+//endif;
 
-i = 1;
+//while(false) do
+//write ( factorial*i+i);
+//i=i;
+//endwhile;
+
+//i = 1;
 
 return 1; // Any integer value may be returned
 

@@ -42,6 +42,10 @@ ELSE		(else)
 ENDIF		(endif)
 READ		(read)
 WRITE		(write)
+SWITCH      (switch)
+CASE        (case)
+BREAK       (break)
+DEFAULT     (default)
 
 %%
 
@@ -56,6 +60,10 @@ WRITE		(write)
 {END}		return END;
 {RETURN}	return RETURN;
 {MAIN}		return MAIN;
+{SWITCH}    return SWITCH;
+{CASE}        return CASE;
+{BREAK}       return BREAK;
+{DEFAULT}     return DEFAULT;
 {BOOL}          { char *s = malloc(yyleng); 
                   strcpy(s,yytext); 
                   yylval.charVal = s;
@@ -91,6 +99,7 @@ WRITE		(write)
 "&"           return *yytext;
 ";"	      return *yytext;
 ","         return *yytext;
+":"         return *yytext;
 "="         return *yytext;
 "+"       	   return *yytext;
 "-"        	 return *yytext;

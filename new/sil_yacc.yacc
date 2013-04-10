@@ -30,6 +30,9 @@
 #define LS  25
 #define GS  26
 #define BD1 27
+#define SS  28
+#define CS1 29
+#define CS2 30
 
 void yyerror(char *);
 int yylex(void);
@@ -97,9 +100,9 @@ int check(char *t, int type, struct symbol *p);
 	  struct node *n;
 	}
 
-%token INT INTEGER  ID BOOL BOOLEAN DECL ENDDECL K_BEGIN END RETURN MAIN AND OR NOT WHILE DO ENDWHILE IF THEN ELSE ENDIF READ WRITE
+%token INT INTEGER  ID BOOL BOOLEAN DECL ENDDECL K_BEGIN END RETURN MAIN AND OR NOT WHILE DO ENDWHILE IF THEN ELSE ENDIF READ WRITE SWITCH CASE BREAK DEFAULT
 
-%type<n> var type expr assignment_stmnt in_out_stmnt statement iterative_stmnt body condition conditional_stmnt
+%type<n> var type expr assignment_stmnt in_out_stmnt statement iterative_stmnt body condition conditional_stmnt case_r switch_stmnt
 %type<intVal> INT
 %type<charVal> ID BOOL
 
@@ -136,9 +139,18 @@ statement	: assignment_stmnt  { $$ = $1;
                                 }
 		    | in_out_stmnt      { $$ = $1;
                                 }
+            | switch_stmnt      { $$ = $1;
+                                }
             | function_def      {
                                 }
 		    ;
+
+switch_stmnt    : SWITCH '(' expr ')'  case_r DEFAULT ':' body BREAK      { $$ = makenode(SS, 0, "", $3, $5, $8, 0); }
+                ;
+
+case_r  : CASE expr ':' body BREAK case_r   { $$ = makenode(CS1, 0, "", $2, $4, $6, 0); }
+        | CASE expr ':' body BREAK  { $$ = makenode(CS2, 0, "", $2, $4, NULL, 0); }
+        ;
 
 
 conditional_stmnt	: IF '(' condition ')' THEN body ELSE body ENDIF    { $$ = makenode(IF1, 0, "", $3, $6, $8, 0); 
@@ -401,7 +413,7 @@ void look(char *name) {
 
 int addTac(struct node *t) {
     char temp1[10000] = {}, temp2[10000] = {}, temp3[10000] = {};
-    int tp, tr;
+    int tp, tr, tq, sVal, sJVal;
 
     if(t == NULL) {
         return 0;
@@ -410,7 +422,7 @@ int addTac(struct node *t) {
     if(t->type == I) {
         tp = idLook(regCount, t->id);
         look(t->charVal);
-        sprintf(temp1, "MOV R%d %d", tp, globReg);
+        sprintf(temp1, "MOV R%d [%d]", tp, globReg);
         t->code = malloc(sizeof(temp1));
         strcpy(t->code, temp1);
         return tp;
@@ -578,13 +590,58 @@ int addTac(struct node *t) {
         regCount = 0;
         return tp;
     }
+    else if(t->type == SS) {
+        sVal = addTac(t->one);
+        labelCount += 1;
+        sJVal = labelCount;
+        tq = addTac(t->two);
+        tr = addTac(t->three);
+        
+        sprintf(temp1, "%s\n%s\n%s\nL%d:", (t->one)->code, (t->two)->code, (t->three)->code, tq-1);
+
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return 0;
+
+    }
+    else if(t->type == CS1) {
+        tp = addTac(t->one);
+        int tmpp = ++labelCount;
+        tq = addTac(t->two);
+        tr = addTac(t->three);
+        sprintf(temp1, "%s\nEQ R%d R%d\nJZ R%d L%d\n%s\nJMP L%d\nL%d:%s", (t->one)->code, tp, sVal, tp, tmpp-1, (t->two)->code, tr-1, tmpp-1, (t->three)->code);
+
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        
+        printf("\n>> %d\n", tr);
+        return tr;
+
+    }
+    else if(t->type == CS2) {
+        tp = addTac(t->one);
+        labelCount += 2;
+        int tmpp = labelCount;
+        tq = addTac(t->two);
+        
+        
+        sprintf(temp1, "%s\nEQ R%d R%d\nJZ R%d L%d\n%s\nJMP L%d\nL%d:", (t->one)->code, tp, sVal, tp, tmpp-2, (t->two)->code, tmpp-1, tmpp-2);
+
+        t->code = malloc(sizeof(temp1));
+        strcpy(t->code, temp1);
+        regCount = 0;
+        return tmpp;
+
+    }
     else if(t->type == IF1) {
         tp = addTac(t->one);
         tr = addTac(t->two);
         addTac(t->three);
 
         labelCount += 2;
-        sprintf(temp1, "%s\nJZ R%d L%d\n%s\nJMP L%d\nL%d: %s\nL%d:", (t->one)->code, tp, labelCount-2, (t->two)->code, labelCount-1, labelCount-2, (t->three)->code, labelCount-1);
+        sprintf(temp1, "%s\nJZ R%d L%d\n%s\nJMP L%d\nL%d: %s\nL%d:", (t->one)->code, tp, labelCount-1, (t->two)->code, labelCount, labelCount-1, (t->three)->code, labelCount);
         t->code = malloc(sizeof(temp1));
         strcpy(t->code, temp1);
         regCount = 0;
